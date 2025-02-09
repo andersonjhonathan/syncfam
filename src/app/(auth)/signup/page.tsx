@@ -1,57 +1,100 @@
+import { useState } from 'react';
 import colors from '@/constants/colors';
-import { View, Text, StyleSheet, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'
+import { supabase } from '../../../lib/supabase'
 
 export default function Signup() {
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSignUp() {
+    setLoading(true)
+
+    const { data, error} = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options:{
+        data:{
+          name: name
+        }
+      }
+    })
+
+    if(error){
+      Alert.alert('Error', error.message)
+      setLoading(false)
+      return;
+    }
+
+    setLoading(false)
+    router.replace('/(auth)/signin/page')
+  }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.white }}>
+        <View style={styles.container}>
+          <View style={styles.header}>
 
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name='arrow-back' size={24} color={colors.white} />
-        </Pressable>
-
-        <Text style={styles.logoText}>
-          Dev<Text style={{ color: colors.green }}>App</Text>
-        </Text>
-        <Text style={styles.slogan}>
-          Criar uma conta
-        </Text>
-      </View>
-
-      <View style={styles.form}>
-        <View>
-          <Text style={styles.label}>Nome completo</Text>
-          <TextInput
-            placeholder='Nome completo...'
-            style={styles.input}
-          />
-        </View>
-
-        <View>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            placeholder='Digite seu Email...'
-            style={styles.input}
-          />
-        </View>
-
-        <View>
-          <Text style={styles.label}>Senha</Text>
-          <TextInput
-            placeholder='Digite sua senha...'
-            style={styles.input}
-            secureTextEntry
-          />
-          <View>
-            <Pressable style={styles.button}>
-              <Text style={styles.buttonText}>Cadastrar</Text>
+            <Pressable style={styles.backButton} onPress={() => router.back()}>
+              <Ionicons name='arrow-back' size={24} color={colors.white} />
             </Pressable>
+
+            <Text style={styles.logoText}>
+              Dhyz<Text style={{ color: colors.green }}>App</Text>
+            </Text>
+            <Text style={styles.slogan}>
+              Criar uma conta
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            <View>
+              <Text style={styles.label}>Nome completo</Text>
+              <TextInput
+                placeholder='Nome completo...'
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+
+            <View>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                placeholder='Digite seu Email...'
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <View>
+              <Text style={styles.label}>Senha</Text>
+              <TextInput
+                placeholder='Digite sua senha...'
+                style={styles.input}
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+              <View>
+                <Pressable style={styles.button} onPress={handleSignUp}>
+                  <Text style={styles.buttonText}>
+                    {loading ? 'Carregando...' : 'Cadastrar'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
